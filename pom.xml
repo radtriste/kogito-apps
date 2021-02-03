@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.kie.kogito</groupId>
     <artifactId>kogito-build-parent</artifactId>
-    <version>987.0.0.Final</version>
+    <version>987.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>kogito-apps</artifactId>
   <packaging>pom</packaging>
@@ -33,7 +33,7 @@
     <container.image.trusty-service>org.kie.kogito/trusty-service:${project.version}</container.image.trusty-service>
 
     <!-- OptaPlanner version -->
-    <version.org.optaplanner>654.0.0.Final</version.org.optaplanner>
+    <version.org.optaplanner>654.0.1-SNAPSHOT</version.org.optaplanner>
   </properties>
 
   <repositories>
