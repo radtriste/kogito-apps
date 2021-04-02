@@ -55,7 +55,9 @@ pipeline {
                         }
                     }
 
-                    checkoutRepo()
+                    dir(getRepoName()) {
+                        checkoutRepo()
+                    }
                 }
             }
             post {
@@ -76,7 +78,9 @@ pipeline {
                 expression { return isRelease() || isCreatePr() }
             }
             steps {
-                prepareForPR()
+                dir(getRepoName()) {
+                    prepareForPR()
+                }
             }
         }
         stage('Update project version') {
@@ -125,7 +129,13 @@ pipeline {
                 expression { return isRelease() || isCreatePr()  }
             }
             steps {
-                commitAndCreatePR()
+                dir(getRepoName()) {
+                    if (githubscm.isThereAnyChanges()) {
+                        commitAndCreatePR()
+                    } else {
+                        println '[WARN] no changes to commit'
+                    }
+                }
             }
             post {
                 success {
@@ -160,17 +170,13 @@ void saveReports(boolean allowEmpty=false) {
 }
 
 void checkoutRepo() {
-    dir(getRepoName()) {
-        deleteDir()
-        checkout(githubscm.resolveRepository(getRepoName(), getGitAuthor(), getBuildBranch(), false))
-    }
+    deleteDir()
+    checkout(githubscm.resolveRepository(getRepoName(), getGitAuthor(), getBuildBranch(), false))
 }
 
 void prepareForPR() {
-    dir(getRepoName()) {
-        githubscm.forkRepo(getBotAuthorCredsID())
-        githubscm.createBranch(getBotBranch())
-    }
+    githubscm.forkRepo(getBotAuthorCredsID())
+    githubscm.createBranch(getBotBranch())
 }
 
 void commitAndCreatePR() {
@@ -181,11 +187,9 @@ void commitAndCreatePR() {
     } else {
         prBody += '\nPlease review and merge.'
     }
-    dir(getRepoName()) {
-        githubscm.commitChanges(commitMsg, { githubscm.findAndStageNotIgnoredFiles('pom.xml') })
-        githubscm.pushObject('origin', getBotBranch(), getBotAuthorCredsID())
-        deployProperties["${getRepoName()}.pr.link"] = githubscm.createPR(commitMsg, prBody, getBuildBranch(), getBotAuthorCredsID())
-    }
+    githubscm.commitChanges(commitMsg, { githubscm.findAndStageNotIgnoredFiles('pom.xml') })
+    githubscm.pushObject('origin', getBotBranch(), getBotAuthorCredsID())
+    deployProperties["${getRepoName()}.pr.link"] = githubscm.createPR(commitMsg, prBody, getBuildBranch(), getBotAuthorCredsID())
 }
 
 boolean isRelease() {
