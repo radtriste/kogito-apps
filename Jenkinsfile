@@ -7,13 +7,14 @@ changeBranch = env.ghprbSourceBranch ?: CHANGE_BRANCH
 changeTarget = env.ghprbTargetBranch ?: CHANGE_TARGET
 
 pipeline {
-    agent {
-        label 'kie-rhel7 && kie-mem16g'
-    }
-    tools {
-        maven 'kie-maven-3.6.2'
-        jdk 'kie-jdk11'
-    }
+    agent any
+    // agent {
+    //     label 'kie-rhel7 && kie-mem16g'
+    // }
+    // tools {
+    //     maven 'kie-maven-3.6.2'
+    //     jdk 'kie-jdk11'
+    // }
     options {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '10', numToKeepStr: '')
         timeout(time: 360, unit: 'MINUTES')
@@ -33,79 +34,79 @@ pipeline {
                 checkoutRepo('kogito-apps')
             }
         }
-        stage('Build quarkus') {
-            when {
-                expression { return getQuarkusBranch() }
-            }
-            steps {
-                script {
-                    checkoutQuarkusRepo()
-                    getMavenCommand('quarkus', false)
-                        .withProperty('quickly')
-                        .run('clean install')
-                }
-            }
-        }
-        stage('Build Runtimes') {
-            steps {
-                script {
-                    getMavenCommand('kogito-runtimes')
-                        .skipTests(true)
-                        .withProperty('skipITs', true)
-                        .run('clean install')
-                }
-            }
-        }
-        stage('Build OptaPlanner') {
-            steps {
-                script {
-                    getMavenCommand('optaplanner')
-                        .withProperty('quickly')
-                        .run('clean install')
-                }
-            }
-        }
-        stage('Build Apps') {
-            steps {
-                script {
-                    mvnCmd = getMavenCommand('kogito-apps', true, true)
-                    if (isNormalPRCheck()) {
-                        mvnCmd.withProperty('validate-formatting')
-                            .withProfiles(['run-code-coverage'])
-                    }
-                    mvnCmd.run('clean install')
-                }
-            }
-            post {
-                cleanup {
-                    script {
-                        cleanContainers()
-                    }
-                }
-            }
-        }
-        stage('Analyze Apps by SonarCloud') {
-            when {
-                expression { isNormalPRCheck() }
-            }
-            steps {
-                script {
-                    getMavenCommand('kogito-apps')
-                        .withOptions(['-e', '-nsu'])
-                        .withProfiles(['sonarcloud-analysis'])
-                        .run('validate')
-                }
-            }
-        }
+        // stage('Build quarkus') {
+        //     when {
+        //         expression { return getQuarkusBranch() }
+        //     }
+        //     steps {
+        //         script {
+        //             checkoutQuarkusRepo()
+        //             getMavenCommand('quarkus', false)
+        //                 .withProperty('quickly')
+        //                 .run('clean install')
+        //         }
+        //     }
+        // }
+        // stage('Build Runtimes') {
+        //     steps {
+        //         script {
+        //             getMavenCommand('kogito-runtimes')
+        //                 .skipTests(true)
+        //                 .withProperty('skipITs', true)
+        //                 .run('clean install')
+        //         }
+        //     }
+        // }
+        // stage('Build OptaPlanner') {
+        //     steps {
+        //         script {
+        //             getMavenCommand('optaplanner')
+        //                 .withProperty('quickly')
+        //                 .run('clean install')
+        //         }
+        //     }
+        // }
+        // stage('Build Apps') {
+        //     steps {
+        //         script {
+        //             mvnCmd = getMavenCommand('kogito-apps', true, true)
+        //             if (isNormalPRCheck()) {
+        //                 mvnCmd.withProperty('validate-formatting')
+        //                     .withProfiles(['run-code-coverage'])
+        //             }
+        //             mvnCmd.run('clean install')
+        //         }
+        //     }
+        //     post {
+        //         cleanup {
+        //             script {
+        //                 cleanContainers()
+        //             }
+        //         }
+        //     }
+        // }
+        // stage('Analyze Apps by SonarCloud') {
+        //     when {
+        //         expression { isNormalPRCheck() }
+        //     }
+        //     steps {
+        //         script {
+        //             getMavenCommand('kogito-apps')
+        //                 .withOptions(['-e', '-nsu'])
+        //                 .withProfiles(['sonarcloud-analysis'])
+        //                 .run('validate')
+        //         }
+        //     }
+        // }
     }
     post {
-        always {
-            script {
-                archiveArtifacts artifacts: '**/target/*-runner.jar, **/target/*-runner', fingerprint: true
-                junit '**/**/junit.xml'
-                junit '**/target/surefire-reports/**/*.xml, **/target/failsafe-reports/**/*.xml'
-            }
-        }
+        // always {
+        //     script {
+                // archiveArtifacts artifacts: '**/target/*-runner.jar, **/target/*-runner', fingerprint: true
+                // junit '**/**/junit.xml'
+                // junit '**/target/surefire-reports/**/*.xml, **/target/failsafe-reports/**/*.xml'
+        //     }
+        // }
         failure {
             script {
                 mailer.sendEmail_failedPR()
