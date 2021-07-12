@@ -100,7 +100,7 @@ void setupMultijobPrLTSChecks() {
 }
 
 void setupSonarCloudJob(String jobFolder) {
-    def jobParams = getJobParams('kogito-apps-sonarcloud', jobFolder, 'Jenkinsfile.sonarcloud', 'Kogito Apps Daily Sonar')
+    def jobParams = getJobParams('kogito-apps-sonarcloud', jobFolder, '.ci/jenkins/Jenkinsfile.sonarcloud', 'Kogito Apps Daily Sonar')
     jobParams.triggers = [ cron : 'H 20 * * 1-5' ]
     KogitoJobTemplate.createPipelineJob(this, jobParams).with {
         parameters {
@@ -114,7 +114,7 @@ void setupSonarCloudJob(String jobFolder) {
 }
 
 void setupDeployJob(String jobFolder, KogitoJobType jobType) {
-    def jobParams = getJobParams('kogito-apps-deploy', jobFolder, 'Jenkinsfile.deploy', 'Kogito Apps Deploy')
+    def jobParams = getJobParams('kogito-apps-deploy', jobFolder, '.ci/jenkins/Jenkinsfile.deploy', 'Kogito Apps Deploy')
     if (jobType == KogitoJobType.PR) {
         jobParams.git.branch = '${BUILD_BRANCH_NAME}'
         jobParams.git.author = '${GIT_AUTHOR}'
@@ -170,7 +170,7 @@ void setupDeployJob(String jobFolder, KogitoJobType jobType) {
 }
 
 void setupPromoteJob(String jobFolder, KogitoJobType jobType) {
-    KogitoJobTemplate.createPipelineJob(this, getJobParams('kogito-apps-promote', jobFolder, 'Jenkinsfile.promote', 'Kogito Apps Promote')).with {
+    KogitoJobTemplate.createPipelineJob(this, getJobParams('kogito-apps-promote', jobFolder, '.ci/jenkins/Jenkinsfile.promote', 'Kogito Apps Promote')).with {
         parameters {
             stringParam('DISPLAY_NAME', '', 'Setup a specific build display name')
 
